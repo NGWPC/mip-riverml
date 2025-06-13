@@ -1,7 +1,21 @@
 # Define path to FEMA BLE data and output directory
 fema <- '/Volumes/MyBook/mip_full_collection/'
-outdir <- glue::glue("{fema}/riverML2")
+outdir <- glue::glue("{fema}/riverML3")
 dir.create(outdir, showWarnings = FALSE)
+
+
+clean_elev <- function(elev_vec, threshold = 100) {
+for (i in which(elev_vec > threshold)) {
+if (i > 1 && i < length(elev_vec)) {
+elev_vec[i] <- mean(c(elev_vec[i - 1], elev_vec[i + 1]), na.rm = TRUE)
+} else if (i == 1) {
+elev_vec[i] <- elev_vec[i + 1]
+} else if (i == length(elev_vec)) {
+elev_vec[i] <- elev_vec[i - 1]
+}
+}
+elev_vec
+}
 
 # Helper function to compute channel area (CA) from a transect
 .findCA <- function(df, depth) {
@@ -22,12 +36,19 @@ dir.create(outdir, showWarnings = FALSE)
 # Get all BLE subdirectories excluding previous riverML runs
 ble <- list.dirs(fema, recursive = FALSE)
 ble <- ble[!grepl('riverML', ble)]
+subs = list()
+for(b in 1:length(ble)) {
+  dir <- grep('submodels', list.dirs(ble[b], recursive = FALSE), value = TRUE)
+  # Find all GPKG submodel files and extract metadata
+  subs[[b]] <- length(list.files(dir, recursive = TRUE, pattern = ".gpkg$", full.names = TRUE))
+  message(b)
+}
 
 # Reference fabric path
 ref_path <- "/Users/mikejohnson/hydrofabric/v3.0/reference_fabric.gpkg"
 
 # Loop through each BLE HUC directory
-for (b in 464:length(ble)) {
+for (b in 1:length(ble)) {
   
   dir <- grep('submodels', list.dirs(ble[b], recursive = FALSE), value = TRUE)
   
@@ -47,6 +68,7 @@ for (b in 464:length(ble)) {
     message("\tAlready processed ", basename(subs$name[1]), " - skipping")
   } else {
     message("Processing ", basename(ble[b]), " (", b ," in ", length(ble), ")")
+    
     subs_data <- list()
     
     for (v in 1:nrow(subs)) {
@@ -83,6 +105,7 @@ for (b in 464:length(ble)) {
           result$TW <- max(result$x) - min(result$x)
           result$flowpath_id <- subs$reach[v]
           result$river_station <- transects$river_station[j] 
+          result$model = subs$file[v]
           result$A <- .findCA(result, max(result$Y))
           result$r <- result$A / ((result$Ym * result$TW) - result$A)
           result$domain <- subs$name[v]
@@ -92,16 +115,35 @@ for (b in 464:length(ble)) {
             left_join(
               select(transects[j,], 
                      river_station, river_reach_rs, 
-                     source_river, source_reach, source_river_station),
+                     source_river, source_reach, source_river_station, station_elevation_points, bank_stations ),
               by = c('river_station')
             ) |> 
             st_as_sf()
         }
       }
-      subs_data[[v]] <- bind_rows(ll)
+      
+      df = tryCatch({read_sf(subs$file[v], 'metadata') |> filter(key == "units")},
+                    error = function(e) {
+                      data.frame(value = NA)
+                    })
+      
+      tmp = df |> 
+        mutate(flowpath_id = subs$reach[v],
+               epsg = st_crs(read_sf(subs$file[v], 'XS'))$epsg,
+               crs_units = st_crs(read_sf(subs$file[v], 'XS'))$units) |> 
+        select(flowpath_id, metdata_units = value, epsg, crs_units)
+      
+      tmp2 = bind_rows(ll)
+      
+      if(nrow(tmp2) > 0 & nrow(tmp) > 0) {
+        subs_data[[v]] <- left_join(tmp2, tmp, by = "flowpath_id")
+      } else {
+        subs_data[[v]] <- NULL
+      }
     }
     
-    huc_xs <- data.table::rbindlist(subs_data)
+    huc_xs <- data.table::rbindlist(subs_data) |> 
+      tibble()
     
     if (nrow(huc_xs) == 0) {
       warning("No channels in submodel ", v, " for ", subs$reach[v])
@@ -117,7 +159,10 @@ for (b in 464:length(ble)) {
           r = mean(r[is.finite(r)]),
           TW = mean(TW),
           Y = mean(Ym),
-          geom = geom[ceiling(n()/2)]
+          geom = geom[ceiling(n()/2)],
+          source_river_station = source_river_station[ceiling(n()/2)],
+          river_station = river_station[ceiling(n()/2)],
+          model = model[ceiling(n()/2)],
         )
       
       # Write output layers
@@ -135,7 +180,7 @@ for (b in 464:length(ble)) {
 
 # Load and export final dataset
 
-xs <- map(list.files(outdir, full.names = TRUE), 
+xs <- purrr::map(list.files(outdir, full.names = TRUE), 
           ~read_sf(.x, 'representative_xs'))
 
 y <- nhdplusTools::get_vaa(c('ftype', 'streamorde')) |> 

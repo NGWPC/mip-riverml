@@ -4,17 +4,24 @@ subtitle: "Using FEMA BLE Submodel Outputs to Extract Channel Cross-Section Char
 author:
   name: "Lynker"
 date: "June 13, 2025"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    html-math-method: katex
 ---
 
-## Overview
+# Overview
 
 This document processes a collection of hydraulic model outputs (in this case, FEMA BLE submodels stored as .gpkg files) to extract and compute representative channel cross-section (XS) characteristics for each river reach within a hydrologic unit. It combines geospatial data manipulation with hydrologic geometry analysis to generate useful channel metrics for modeling or further analysis.
+
+# Step 1: Preparing Input Data.
 
 This example processes elevation profile data from FEMA BLE submodels, extracting key cross-sectional (XS) geometry attributes for hydraulic analysis. The overall goal is to compute summary statistics and representative cross-sections per stream reach in the reference fabric, so that it can be used within the existing riverML framework for predicting channel size and shape.
 
 ## Load Packages and Define Helper Functions
 
-```{r}
+```{r, message = FALSE, warning=FALSE}
 # Load required packages
 library(dplyr)
 library(sf)
@@ -78,6 +85,8 @@ subs <- list.files(dir, recursive = TRUE, pattern = ".gpkg$", full.names = TRUE)
     reach = gsub('.gpkg', '', reach),
     name = gsub('/submodels', "", gsub(fema, "", dir))
   )
+
+glimpse(subs)
 ```
 
 ## Process Each Submodel with Transect Processing Loop
@@ -176,21 +185,20 @@ for (v in 1:nrow(subs)) {
 }
 ```
 
-# Merge all data
+## Merge all data
 
 All cleaned and processed transect data are combined into one table, now representing all relevant reaches in the HUC.
 
 ```{r}
-huc_xs <- tibble(data.table::rbindlist(subs_data))
+huc_xs <- tibble(data.table::rbindlist(subs_data)) |> 
+  st_as_sf()
 
 glimpse(huc_xs)
-
-huc_xs <- st_as_sf(huc_xs)
 
 #mapview::mapview(st_as_sf(huc_xs))
 ```
 
-# Extract Representative Cross Section
+## Extract Representative Cross Section
 
 Each reach may have multiple transects. This code a representative transect per reach:
  - Takes the median one (by river station order).
@@ -218,16 +226,16 @@ nhd_meta <- nhdplusTools::get_vaa(c('ftype', 'streamorde')) |>
 
 out_xs <- representive_features |> 
   left_join(nhd_meta, by = c('flowpath_id' = 'comid'))
+
+glimpse(out_xs)
 ```
 
 ```{r}
-ref_fab <- read_sf(ref_path, "flowpaths",
-        wkt_filter = st_as_text(st_as_sfc(st_bbox(st_union(huc_xs))))) 
-
+ref_fab <- read_sf(ref_path, "flowpaths", wkt_filter = st_as_text(st_as_sfc(st_bbox(st_union(huc_xs))))) 
 #mapview::mapview(out_xs, color = "red") + ref_fab
 ```
 
-# 🎯 Summary
+## Summary
 
 --> Inputs: FEMA BLE submodels as .gpkg files containing cross-section data, Reference hydrofabric (flowlines)
 
@@ -235,33 +243,45 @@ ref_fab <- read_sf(ref_path, "flowpaths",
 
 --> Clean, analysis-ready datasets
 
-# Step 2: Training Machine Learning (ML) models using new Ripple RAS information to update channel dimension characteristics. 
+# Step 2: Training Machine Learning (ML) model
+
+Here we outline the results from using new  RAS information to update channel dimension characteristics in the riverML model first shared [here](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2024JH000173). 
 
 The goal is to enhance CONUS-wide estimates of bankfull river channel geometry by training ML models on a Ripple and HydroSWOT combined datasets. The models predict three key parameters that provide a simplified yet comprehensive representation of channel shape: top-width (TW), mean depth (Y), and a shape (r). 
 
 ## Preprocessing:
 
 The initial dataset was significantly expanded by incorporating new Ripple RAS data, increasing the potential training instances from ~3,000 (HydroSWOT) to ~70,000. 
-preprocessing steps included:
+
+Our reprocessing steps included:
 
 **Parameter Extraction**: Bankfull TW and Y were extracted directly from RAS models. The channel shape (r) was calculated from clipped cross-section data at bankfull stage using the area method. All measurements were unified in units via projection transformation.
 
 **Spatial Aggregation**: Data points were averaged to the river reach scale to align with the hydrofabric, reducing the dataset to ~140,000 unique reaches. This new data provides substantially greater coverage in the central U.S. (especially Texas) and critically expands the representation of low-order streams (orders 1-3), Coastal domain, lakes, and reservoirs which were sparse in the original HydroSWOT dataset.
 
-![Figure 1](images/fig1.png)
+```{r, fig.cap="Figure 1: Comparison of HydroSWOT and Ripple RAS data coverage across CONUS.", echo = FALSE}
+knitr::include_graphics("images/fig1.png")
+```
 
-**Quality Control and Filtering**: A comparison between RAS-derived top-widths and a comprehensive, satellite-derived reference dataset (Suggested-TW) revealed significant discrepancies. To remove anomalous data points, a filtering threshold was applied: 
+![Figure 1](../images/fig1.png)
+
+**Quality Control and Filtering**: A comparison between RAS-derived top-widths and a comprehensive, satellite-derived reference dataset (data fusion TW; dfTW) revealed significant discrepancies. To remove anomalous data points, a filtering threshold was applied: 
 
 $$
-0.75 ✕ Suggested-TW ≤ TW ≤ 5 ✕ Suggested-TW. 
+0.75 ✕ dfTW ≤ rasTW ≤ 5 ✕ dfTW. 
 $$
 
+```{r, fig.cap = "Figure 2: Before and after filtering.", echo = FALSE}
+knitr::include_graphics("images/fig2.png")
+```
 
-![Figure 2](images/fig2.png)
+
 
 This essential cleaning step reduced the dataset to ~70,000 high-confidence reaches. The majority of filtered data (~44%) originated from stream orders 1-3, which also exhibited the largest error magnitudes prior to cleaning.
 
-![Figure 3](images/fig3.png)
+```{r, fig.cap = "Figure 3: Reduction in primary dataset based on above threshold by streamorder.", echo = FALSE}
+knitr::include_graphics("images/fig3.png")
+```
 
 ## ML Training
 
@@ -277,13 +297,20 @@ The inclusion of diverse training data has markedly improved model performance a
 
 **Qualitative Validation**: Visual inspection of CONUS-wide maps of the predicted TW, Y, and r reveals coherent, large-scale fluvial patterns that align with known river characteristics across CONUS. This provides strong qualitative confidence that the models have successfully learned the underlying dynamics of river channel formation across different climates and landscapes.
 
+```{r, fig.cap = "Figure 4: ML estimates for TW.", echo = FALSE}
+knitr::include_graphics("images/fig4.png")
+```
 
-![Figure 4](images/fig4.png)
-![Figure 5](images/fig5.png)
-![Figure 6](images/fig6.png)
 
+```{r, fig.cap = "Figure 5: ML estimates for Y.", echo = FALSE}
+knitr::include_graphics("images/fig5.png")
+```
 
-# Final Data:
+```{r, fig.cap = "Figure 6: ML estimates for r.", echo = FALSE}
+knitr::include_graphics("images/fig6.png")
+```
+
+# Final Data Access
 
 The final input data can be found [here](data/riverML_ripple_beta_units.parquet)
 

@@ -243,6 +243,8 @@ ref_fab <- read_sf(ref_path, "flowpaths", wkt_filter = st_as_text(st_as_sfc(st_b
 
 --> Clean, analysis-ready datasets
 
+--> The full looped run can be found [here](https://github.com/lynker-spatial/mip-riverml/blob/main/mip-processing.R)
+
 # Step 2: Training Machine Learning (ML) model
 
 Here we outline the results from using new  RAS information to update channel dimension characteristics in the riverML model first shared [here](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2024JH000173). 

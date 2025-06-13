@@ -1,8 +1,8 @@
 ---
 title: "Data Processing Steps for RiverML"
-subtitle: "Using FEMA BLE Submodel Outputs to Extract Channel Cross-Section Characteristics"
+subtitle: "Using FEMA BLE models to inform ML estimates of channel size and shape"
 author:
-  name: "Lynker"
+  name: "Lynker Spatial"
 date: "June 13, 2025"
 format:
   html:
@@ -257,15 +257,13 @@ The initial dataset was significantly expanded by incorporating new Ripple RAS d
 
 Our reprocessing steps included:
 
-**Parameter Extraction**: Bankfull TW and Y were extracted directly from RAS models. The channel shape (r) was calculated from clipped cross-section data at bankfull stage using the area method. All measurements were unified in units via projection transformation.
+**Parameter Extraction**: Bankfull TW and Y were extracted directly from RAS models (see step 1). All measurements were unified in units via projection transformation / scaleing where needed.
 
 **Spatial Aggregation**: Data points were averaged to the river reach scale to align with the hydrofabric, reducing the dataset to ~140,000 unique reaches. This new data provides substantially greater coverage in the central U.S. (especially Texas) and critically expands the representation of low-order streams (orders 1-3), Coastal domain, lakes, and reservoirs which were sparse in the original HydroSWOT dataset.
 
 ```{r, fig.cap="Figure 1: Comparison of HydroSWOT and Ripple RAS data coverage across CONUS.", echo = FALSE}
 knitr::include_graphics("images/fig1.png")
 ```
-
-![Figure 1](../images/fig1.png)
 
 **Quality Control and Filtering**: A comparison between RAS-derived top-widths and a comprehensive, satellite-derived reference dataset (data fusion TW; dfTW) revealed significant discrepancies. To remove anomalous data points, a filtering threshold was applied: 
 
@@ -314,6 +312,7 @@ knitr::include_graphics("images/fig6.png")
 
 # Final Data Access
 
-The final input data can be found [here](data/riverML_ripple_beta_units.parquet)
+The final input data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/riverML_ripple_beta_units.parquet)
 
-The final predicted data can be found [here](data/riverML_ripple_beta_predictions.parquet)
+
+The final predicted data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/riverML_ripple_beta_predictions.parquet)

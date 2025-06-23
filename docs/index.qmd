@@ -310,6 +310,34 @@ knitr::include_graphics("images/fig5.png")
 knitr::include_graphics("images/fig6.png")
 ```
 
+# Skill comparision to HydroSWOT base riverML
+
+A comparison is conducted using unseen test data between the updated machine learning (ML) estimates from Ripple and the earlier HydroSWOT-derived channel characteristics at bankfull conditions. However, it is important to note that the definition of bankfull conditions differs between the HydroSWOT training dataset and Ripple RAS data. In HydroSWOT, bankfull is defined as a flood event with a 50% annual exceedance probability (AEP), whereas Ripple relies on RAS-based classification of bankfull. Consequently, this comparison is not strictly one-to-one but rather an approximation across the two datasets. The same principle applies to derivative variables such as channel top-width, depth, and shape.
+
+We compare results across three categories of flowlines: Inland, Coastal, and Lakes/Reservoirs. The [previous model](https://doi.org/10.1029/2024JH000173) exhibited lower accuracy in Coastal and Lakes/Reservoirs due to data limitations. In contrast, the updated Ripple dataset provides improved representation of lakes, reservoirs, and coastal areas. As expected, we observe notable improvements in these categories, as demonstrated below.
+
+## Width
+
+```{r, fig.cap = "Figure 6: ML estimates for r.", echo = FALSE}
+knitr::include_graphics("images/fig7.png")
+```
+
+## Depth
+
+```{r, fig.cap = "Figure 6: ML estimates for r.", echo = FALSE}
+knitr::include_graphics("images/fig8.png")
+```
+
+## Shape 
+
+```{r, fig.cap = "Figure 6: ML estimates for r.", echo = FALSE}
+knitr::include_graphics("images/fig9.png")
+```
+
+It was found that the previously used quantile transformation resulted in a gap in model prediction between r = 2-9. This occurs because the transformation maps sparse data regions to very small quantile range and was remedied in updated iterations by substituting it with log transformation. This update alone is significant to the impacts of the current model.
+
+
+
 # Final Data Access
 
 The final input data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/riverML_ripple_beta_units.parquet)

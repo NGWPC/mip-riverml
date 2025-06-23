@@ -140,6 +140,12 @@ window.Quarto = {
   <li><a href="#ml-training" id="toc-ml-training" class="nav-link" data-scroll-target="#ml-training">ML Training</a></li>
   <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
   </ul></li>
+  <li><a href="#skill-comparision-to-hydroswot-base-riverml" id="toc-skill-comparision-to-hydroswot-base-riverml" class="nav-link" data-scroll-target="#skill-comparision-to-hydroswot-base-riverml">Skill comparision to HydroSWOT base riverML</a>
+  <ul class="collapse">
+  <li><a href="#width" id="toc-width" class="nav-link" data-scroll-target="#width">Width</a></li>
+  <li><a href="#depth" id="toc-depth" class="nav-link" data-scroll-target="#depth">Depth</a></li>
+  <li><a href="#shape" id="toc-shape" class="nav-link" data-scroll-target="#shape">Shape</a></li>
+  </ul></li>
   <li><a href="#final-data-access" id="toc-final-data-access" class="nav-link" data-scroll-target="#final-data-access">Final Data Access</a></li>
   </ul>
 </nav>
@@ -517,6 +523,51 @@ $ streamorde           &lt;dbl&gt; 1, 2, 1, 1, 2, 2, 2, 1, 3, 3, 3, 3, 2, 1, 1, 
 </div>
 </div>
 </div>
+</section>
+</section>
+<section id="skill-comparision-to-hydroswot-base-riverml" class="level1">
+<h1>Skill comparision to HydroSWOT base riverML</h1>
+<p>A comparison is conducted using unseen test data between the updated machine learning (ML) estimates from Ripple and the earlier HydroSWOT-derived channel characteristics at bankfull conditions. However, it is important to note that the definition of bankfull conditions differs between the HydroSWOT training dataset and Ripple RAS data. In HydroSWOT, bankfull is defined as a flood event with a 50% annual exceedance probability (AEP), whereas Ripple relies on RAS-based classification of bankfull. Consequently, this comparison is not strictly one-to-one but rather an approximation across the two datasets. The same principle applies to derivative variables such as channel top-width, depth, and shape.</p>
+<p>We compare results across three categories of flowlines: Inland, Coastal, and Lakes/Reservoirs. The <a href="https://doi.org/10.1029/2024JH000173">previous model</a> exhibited lower accuracy in Coastal and Lakes/Reservoirs due to data limitations. In contrast, the updated Ripple dataset provides improved representation of lakes, reservoirs, and coastal areas. As expected, we observe notable improvements in these categories, as demonstrated below.</p>
+<section id="width" class="level2">
+<h2 class="anchored" data-anchor-id="width">Width</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/fig7.png" class="img-fluid figure-img" width="1078"></p>
+<figcaption>Figure 6: ML estimates for r.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="depth" class="level2">
+<h2 class="anchored" data-anchor-id="depth">Depth</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/fig8.png" class="img-fluid figure-img" width="1093"></p>
+<figcaption>Figure 6: ML estimates for r.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="shape" class="level2">
+<h2 class="anchored" data-anchor-id="shape">Shape</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/fig9.png" class="img-fluid figure-img" width="1101"></p>
+<figcaption>Figure 6: ML estimates for r.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>It was found that the previously used quantile transformation resulted in a gap in model prediction between r = 2-9. This occurs because the transformation maps sparse data regions to very small quantile range and was remedied in updated iterations by substituting it with log transformation. This update alone is significant to the impacts of the current model.</p>
 </section>
 </section>
 <section id="final-data-access" class="level1">

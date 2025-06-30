@@ -336,11 +336,10 @@ knitr::include_graphics("images/fig9.png")
 
 It was found that the previously used quantile transformation resulted in a gap in model prediction between r = 2-9. This occurs because the transformation maps sparse data regions to very small quantile range and was remedied in updated iterations by substituting it with log transformation. This update alone is significant to the impacts of the current model.
 
-
-
 # Final Data Access
 
 The final input data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/riverML_ripple_beta_units.parquet)
 
-
 The final predicted data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/riverML_ripple_beta_predictions.parquet)
+
+The final deployable model can be found [here (with permisions)](https://github.com/lynker-spatial/predict-riverML)

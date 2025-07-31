@@ -338,8 +338,8 @@ It was found that the previously used quantile transformation resulted in a gap 
 
 # Final Data Access
 
-The final input data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/riverML_ripple_beta_units.parquet)
+The final input data can be found [here](https://raw.githubusercontent.com/NGWPC/mip-riverml/refs/heads/main/data/riverML_ripple_beta_units.parquet)
 
-The final predicted data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/riverML_ripple_beta_predictions.parquet)
+The final predicted data can be found [here](https://raw.githubusercontent.com/NGWPC/mip-riverml/refs/heads/main/data/riverML_ripple_beta_predictions.parquet)
 
-The final deployable model can be found [here (with permisions)](https://github.com/lynker-spatial/predict-riverML)
+The final deployable model can be found [here (with permisions)](https://github.com/NGWPC/predict-riverML)

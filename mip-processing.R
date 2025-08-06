@@ -1,8 +1,16 @@
 # Define path to FEMA BLE data and output directory
-fema <- '/Volumes/MyBook/mip_full_collection/'
-outdir <- glue::glue("{fema}/riverML3")
+fema <- '/Users/taddbindas/projects/NGWPC/icefabric/data/mip_full_collection'
+outdir <- '/Users/taddbindas/projects/NGWPC/icefabric/riverML5'
 dir.create(outdir, showWarnings = FALSE)
 
+library(sf)
+library(dplyr)
+library(glue)
+library(DescTools)
+library(tidyr)
+library(data.table)
+library(purrr)
+library(nhdplusTools)
 
 clean_elev <- function(elev_vec, threshold = 100) {
 for (i in which(elev_vec > threshold)) {
@@ -45,7 +53,7 @@ for(b in 1:length(ble)) {
 }
 
 # Reference fabric path
-ref_path <- "/Users/mikejohnson/hydrofabric/v3.0/reference_fabric.gpkg"
+ref_path <- "/Users/taddbindas/Desktop/sc_reference_fabric.gpkg"
 
 # Loop through each BLE HUC directory
 for (b in 1:length(ble)) {
@@ -163,6 +171,9 @@ for (b in 1:length(ble)) {
           source_river_station = source_river_station[ceiling(n()/2)],
           river_station = river_station[ceiling(n()/2)],
           model = model[ceiling(n()/2)],
+          metdata_units = metdata_units,
+          epsg = epsg,
+          crs_units = crs_units,
         )
       
       # Write output layers
@@ -170,7 +181,7 @@ for (b in 1:length(ble)) {
       write_sf(representive_features, outdir_here, layer = "representative_xs")
       
       read_sf(
-        ref_path, "flowpaths",
+        ref_path, "reference_flowpaths",
         wkt_filter = st_as_text(st_as_sfc(st_bbox(st_union(huc_xs))))
       ) |> 
         write_sf(outdir_here, layer = "reference_fabric")

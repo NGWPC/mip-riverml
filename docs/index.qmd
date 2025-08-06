@@ -218,7 +218,10 @@ representive_features <- huc_xs |>
     geom = geom[ceiling(n()/2)],
     source_river_station = source_river_station[ceiling(n()/2)],
     river_station = river_station[ceiling(n()/2)],
-    model = model[ceiling(n()/2)])
+    model = model[ceiling(n()/2)]),
+    metdata_units = metdata_units,
+    epsg = epsg,
+    crs_units = crs_units,
     
 
 nhd_meta <- nhdplusTools::get_vaa(c('ftype', 'streamorde')) |> 
@@ -340,6 +343,6 @@ It was found that the previously used quantile transformation resulted in a gap 
 
 The final input data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/riverML_ripple_beta_units.parquet)
 
-The final predicted data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/riverML_ripple_beta_predictions.parquet)
+The final predicted data can be found [here](https://raw.githubusercontent.com/lynker-spatial/mip-riverml/refs/heads/main/data/ripple_ml_bf_generated_tw_y_r.parquet)
 
 The final deployable model can be found [here (with permisions)](https://github.com/lynker-spatial/predict-riverML)

@@ -1,6 +1,6 @@
 # Define path to FEMA BLE data and output directory
-fema <- '/Users/taddbindas/projects/NGWPC/icefabric/data/mip_full_collection'
-outdir <- '/Users/taddbindas/projects/NGWPC/icefabric/riverML5'
+fema <- './mip_full_collection'
+outdir <- './riverML3'
 dir.create(outdir, showWarnings = FALSE)
 
 library(sf)
@@ -53,7 +53,7 @@ for(b in 1:length(ble)) {
 }
 
 # Reference fabric path
-ref_path <- "/Users/taddbindas/Desktop/sc_reference_fabric.gpkg"
+ref_path <- "./sc_reference_fabric.gpkg"
 
 # Loop through each BLE HUC directory
 for (b in 1:length(ble)) {
